@@ -1,85 +1,76 @@
-import { getContribution, addMember } from './api.js';
+import { api } from './api';
 
+// DOM Elements
+const loadingDiv = document.getElementById('loading');
+const errorCard = document.getElementById('error-card');
+const mainContent = document.getElementById('main-content');
+const joinCard = document.getElementById('join-card');
+const successCard = document.getElementById('success-card');
+const form = document.getElementById('join-form');
+const submitBtn = document.getElementById('submit-btn');
+
+// Get Code from URL
 const params = new URLSearchParams(window.location.search);
 const code = params.get('code');
 
-const loading = document.getElementById('loading');
-const content = document.getElementById('content');
-const error = document.getElementById('error');
-const form = document.getElementById('memberForm');
-const success = document.getElementById('success');
-
-let contribution = null;
-
-async function loadContribution() {
-  try {
-    contribution = await getContribution(code);
-    
-    document.getElementById('title').textContent = contribution.title;
-    document.getElementById('description').textContent = contribution.description || '';
-    document.getElementById('total').textContent = `KES ${contribution.totalConfirmed.toLocaleString()}`;
-    
-    renderMembers(contribution.members);
-    
-    loading.style.display = 'none';
-    content.style.display = 'block';
-  } catch (err) {
-    loading.style.display = 'none';
-    error.style.display = 'block';
-  }
-}
-
-function renderMembers(members) {
-  const list = document.getElementById('memberList');
-  
-  if (members.length === 0) {
-    list.innerHTML = '<p style="color: var(--gray-700);">No contributions yet. Be the first!</p>';
+async function init() {
+  if (!code) {
+    showError();
     return;
   }
-  
-  list.innerHTML = members.map(m => `
-    <div class="member-item">
-      <div class="member-info">
-        <div class="member-name">${m.name}</div>
-        <div class="member-amount">KES ${m.amount.toLocaleString()}</div>
-      </div>
-      <span class="status-badge status-${m.status}">
-        ${m.status === 'confirmed' ? '✅ Confirmed' : '⏳ Pending'}
-      </span>
-    </div>
-  `).join('');
+
+  try {
+    // 1. Fetch Group Details
+    const group = await api.getGroupPublic(code);
+    renderGroup(group);
+  } catch (err) {
+    console.error(err);
+    showError();
+  }
 }
 
+function renderGroup(group) {
+  loadingDiv.classList.add('hidden');
+  mainContent.classList.remove('hidden');
+
+  document.getElementById('group-title').textContent = group.title;
+  document.getElementById('group-desc').textContent = group.description;
+
+  if (group.whatsapp_link) {
+    const waContainer = document.getElementById('whatsapp-container');
+    const waLink = document.getElementById('whatsapp-link');
+    waLink.href = group.whatsapp_link;
+    waContainer.classList.remove('hidden');
+  }
+}
+
+function showError() {
+  loadingDiv.classList.add('hidden');
+  errorCard.classList.remove('hidden');
+}
+
+// Handle Join
 form.addEventListener('submit', async (e) => {
   e.preventDefault();
-  
-  const btn = form.querySelector('button');
-  btn.disabled = true;
-  btn.textContent = 'Submitting...';
-  
+
+  const name = document.getElementById('name').value;
+  const amount = parseInt(document.getElementById('amount').value);
+
+  submitBtn.disabled = true;
+  submitBtn.textContent = 'Submitting...';
+
   try {
-    const data = {
-      name: document.getElementById('name').value,
-      amount: parseInt(document.getElementById('amount').value),
-    };
-    
-    await addMember(code, data);
-    
-    form.style.display = 'none';
-    success.style.display = 'block';
-    
-    // Reload to show updated list
-    setTimeout(() => loadContribution(), 1000);
-  } catch (error) {
-    alert('Error: ' + error.message);
-    btn.disabled = false;
-    btn.textContent = 'Submit Contribution';
+    await api.joinGroup(code, { name, amount });
+
+    // Show Success
+    joinCard.classList.add('hidden');
+    successCard.classList.remove('hidden');
+  } catch (err) {
+    alert('Error joining: ' + err.message);
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'Pledge / Pay 💸';
   }
 });
 
-if (!code) {
-  loading.style.display = 'none';
-  error.style.display = 'block';
-} else {
-  loadContribution();
-}
+// Start
+init();

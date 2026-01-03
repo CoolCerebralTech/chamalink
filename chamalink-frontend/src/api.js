@@ -1,49 +1,53 @@
-const API_URL = 'http://localhost:3000/api';
+const API_URL = 'http://localhost:3000';
 
-export async function createContribution(data) {
-  const res = await fetch(`${API_URL}/contributions`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data),
-  });
-  if (!res.ok) throw new Error('Failed to create contribution');
-  return res.json();
+// Helper to handle responses
+async function fetchJson(endpoint, options = {}) {
+  try {
+    const res = await fetch(`${API_URL}${endpoint}`, {
+      headers: { 'Content-Type': 'application/json' },
+      ...options,
+    });
+
+    if (!res.ok) {
+      const errorData = await res.json();
+      throw new Error(errorData.message || 'Something went wrong');
+    }
+    return await res.json();
+  } catch (err) {
+    alert(err.message); // Simple error handling
+    throw err;
+  }
 }
 
-export async function getContribution(code) {
-  const res = await fetch(`${API_URL}/contributions/${code}`);
-  if (!res.ok) throw new Error('Contribution not found');
-  return res.json();
-}
+export const api = {
+  // Create a new group
+  createGroup: (data) => 
+    fetchJson('/contributions', { method: 'POST', body: JSON.stringify(data) }),
 
-export async function getAdminContribution(token) {
-  const res = await fetch(`${API_URL}/contributions/admin/${token}`);
-  if (!res.ok) throw new Error('Invalid admin token');
-  return res.json();
-}
+  // Get public group info (for members)
+  getGroupPublic: (code) => 
+    fetchJson(`/contributions/code/${code}`),
 
-export async function addMember(code, data) {
-  const res = await fetch(`${API_URL}/members/${code}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data),
-  });
-  if (!res.ok) throw new Error('Failed to add member');
-  return res.json();
-}
+  // Get admin group info (for owner)
+  getGroupAdmin: (token) => 
+    fetchJson(`/contributions/admin/${token}`),
 
-export async function updateMemberStatus(memberId, status, adminToken) {
-  const res = await fetch(`${API_URL}/members/${memberId}/status?admin_token=${adminToken}`, {
-    method: 'PATCH',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ status }),
-  });
-  if (!res.ok) throw new Error('Failed to update status');
-  return res.json();
-}
+  // Get admin member list
+  getMembers: (token) => 
+    fetchJson(`/members/admin/${token}`),
 
-export async function getWhatsAppSummary(token) {
-  const res = await fetch(`${API_URL}/members/summary/${token}`);
-  if (!res.ok) throw new Error('Failed to generate summary');
-  return res.json();
-}
+  // Join a group
+  joinGroup: (code, data) => 
+    fetchJson(`/members/${code}`, { method: 'POST', body: JSON.stringify(data) }),
+
+  // Update payment status
+  updateStatus: (id, token, status) => 
+    fetchJson(`/members/${id}`, { 
+      method: 'PATCH', 
+      body: JSON.stringify({ admin_token: token, status }) 
+    }),
+
+  // Get WhatsApp Summary
+  getWhatsapp: (token) => 
+    fetchJson(`/members/whatsapp/${token}`),
+};

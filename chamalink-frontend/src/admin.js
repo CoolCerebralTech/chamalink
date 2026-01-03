@@ -1,102 +1,130 @@
-import { getAdminContribution, updateMemberStatus, getWhatsAppSummary } from './api.js';
+import { api } from './api';
 
+const loadingDiv = document.getElementById('loading');
+const dashboard = document.getElementById('dashboard');
+const membersList = document.getElementById('members-list');
+const emptyState = document.getElementById('empty-state');
+const refreshBtn = document.getElementById('refresh-btn');
+const whatsappBtn = document.getElementById('whatsapp-btn');
+
+// Get Token
 const params = new URLSearchParams(window.location.search);
 const token = params.get('token');
 
-const loading = document.getElementById('loading');
-const content = document.getElementById('content');
-const error = document.getElementById('error');
+// Store data locally to recalculate totals easily
+let currentMembers = [];
 
-let contribution = null;
-
-async function loadContribution() {
-  try {
-    contribution = await getAdminContribution(token);
-    
-    document.getElementById('title').textContent = contribution.title;
-    document.getElementById('description').textContent = contribution.description || '';
-    document.getElementById('total').textContent = `KES ${contribution.totalConfirmed.toLocaleString()}`;
-    
-    const memberUrl = `${window.location.origin}/contribution.html?code=${contribution.code}`;
-    document.getElementById('memberLink').value = memberUrl;
-    
-    renderMembers(contribution.members);
-    await loadWhatsAppSummary();
-    
-    loading.style.display = 'none';
-    content.style.display = 'block';
-  } catch (err) {
-    loading.style.display = 'none';
-    error.style.display = 'block';
-  }
-}
-
-function renderMembers(members) {
-  const list = document.getElementById('memberList');
-  
-  if (members.length === 0) {
-    list.innerHTML = '<p style="color: var(--gray-700);">No contributions yet.</p>';
+async function init() {
+  if (!token) {
+    alert('No admin token provided.');
+    window.location.href = '/';
     return;
   }
-  
-  list.innerHTML = members.map(m => `
-    <div class="member-item">
-      <div class="member-info">
-        <div class="member-name">${m.name}</div>
-        <div class="member-amount">KES ${m.amount.toLocaleString()}</div>
-      </div>
-      <div style="display: flex; gap: 8px;">
-        ${m.status === 'pending' 
-          ? `<button class="btn btn-success btn-sm" onclick="confirmMember('${m.id}')">Confirm</button>`
-          : `<span class="status-badge status-confirmed">✅ Confirmed</span>`
-        }
-      </div>
-    </div>
-  `).join('');
+  await loadData();
 }
 
-async function loadWhatsAppSummary() {
+async function loadData() {
   try {
-    const { summary } = await getWhatsAppSummary(token);
-    document.getElementById('whatsappSummary').textContent = summary;
+    const data = await api.getMembers(token);
+    document.getElementById('group-title').textContent = data.group;
+    currentMembers = data.members;
+    render();
   } catch (err) {
-    document.getElementById('whatsappSummary').textContent = 'Error loading summary';
+    alert('Failed to load dashboard: ' + err.message);
+  } finally {
+    loadingDiv.classList.add('hidden');
+    dashboard.classList.remove('hidden');
   }
 }
 
-window.confirmMember = async (memberId) => {
+function render() {
+  membersList.innerHTML = '';
+  
+  // Calculate Totals
+  let totalCollected = 0;
+  let totalPending = 0;
+
+  if (currentMembers.length === 0) {
+    emptyState.classList.remove('hidden');
+    return;
+  } else {
+    emptyState.classList.add('hidden');
+  }
+
+  currentMembers.forEach(member => {
+    if (member.status === 'confirmed') totalCollected += member.amount;
+    else totalPending += member.amount;
+
+    // Create Card for Member
+    const div = document.createElement('div');
+    div.className = 'card';
+    div.style.padding = '1rem';
+    div.style.display = 'flex';
+    div.style.justifyContent = 'space-between';
+    div.style.alignItems = 'center';
+    
+    // Left side: Name & Status
+    const isPaid = member.status === 'confirmed';
+    div.innerHTML = `
+      <div>
+        <div style="font-weight: 600; font-size: 1.1rem;">${member.name}</div>
+        <div style="margin-top: 4px;">
+          <span class="badge ${isPaid ? 'confirmed' : 'pending'}">
+            ${isPaid ? 'PAID ✅' : 'PENDING ⏳'}
+          </span>
+        </div>
+      </div>
+      <div style="text-align: right;">
+        <div style="font-weight: bold; margin-bottom: 8px;">KES ${member.amount.toLocaleString()}</div>
+        ${!isPaid ? `<button class="confirm-btn" data-id="${member.id}" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;">Confirm</button>` : ''}
+      </div>
+    `;
+    membersList.appendChild(div);
+  });
+
+  // Handle Confirm Buttons
+  document.querySelectorAll('.confirm-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => confirmPayment(e.target.dataset.id));
+  });
+
+  // Update Header Stats
+  document.getElementById('total-amount').textContent = `KES ${totalCollected.toLocaleString()}`;
+  document.getElementById('pending-amount').textContent = `KES ${totalPending.toLocaleString()}`;
+}
+
+async function confirmPayment(memberId) {
+  if (!confirm('Mark this payment as received?')) return;
+
   try {
-    await updateMemberStatus(memberId, 'confirmed', token);
-    await loadContribution(); // Reload
-  } catch (error) {
-    alert('Error: ' + error.message);
+    // Optimistic Update (update UI immediately before API)
+    const member = currentMembers.find(m => m.id === memberId);
+    if (member) member.status = 'confirmed';
+    render(); // Re-render to update totals and remove button
+
+    // Call API
+    await api.updateStatus(memberId, token, 'confirmed');
+  } catch (err) {
+    alert('Error updating status');
+    // Revert if failed
+    await loadData();
   }
-};
-
-window.copyLink = () => {
-  const input = document.getElementById('memberLink');
-  input.select();
-  document.execCommand('copy');
-  
-  const btn = event.target;
-  const original = btn.textContent;
-  btn.textContent = 'Copied!';
-  setTimeout(() => btn.textContent = original, 2000);
-};
-
-window.copySummary = () => {
-  const summary = document.getElementById('whatsappSummary').textContent;
-  navigator.clipboard.writeText(summary);
-  
-  const btn = event.target;
-  const original = btn.textContent;
-  btn.textContent = 'Copied!';
-  setTimeout(() => btn.textContent = original, 2000);
-};
-
-if (!token) {
-  loading.style.display = 'none';
-  error.style.display = 'block';
-} else {
-  loadContribution();
 }
+
+// Button Actions
+refreshBtn.addEventListener('click', loadData);
+
+whatsappBtn.addEventListener('click', async () => {
+  whatsappBtn.textContent = 'Generating...';
+  try {
+    const res = await api.getWhatsapp(token);
+    navigator.clipboard.writeText(res.text);
+    whatsappBtn.textContent = 'Copied! ✅';
+    setTimeout(() => whatsappBtn.textContent = '📋 Copy WhatsApp Update', 2000);
+  } catch (err) {
+    alert('Failed to generate summary');
+    whatsappBtn.textContent = 'Error ❌';
+  }
+});
+
+// Start
+init();

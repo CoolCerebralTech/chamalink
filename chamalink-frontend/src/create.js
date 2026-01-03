@@ -1,46 +1,61 @@
-import { createContribution } from './api.js';
+import { api } from './api';
 
-const form = document.getElementById('createForm');
-const result = document.getElementById('result');
+const form = document.getElementById('create-form');
+const createCard = document.getElementById('create-card');
+const successCard = document.getElementById('success-card');
+const submitBtn = document.getElementById('submit-btn');
 
 form.addEventListener('submit', async (e) => {
   e.preventDefault();
   
-  const btn = form.querySelector('button');
-  btn.disabled = true;
-  btn.textContent = 'Creating...';
-  
+  // 1. Get Values
+  const title = document.getElementById('title').value;
+  const description = document.getElementById('description').value;
+  const whatsapp_link = document.getElementById('whatsapp').value;
+
+  // 2. Loading State
+  submitBtn.disabled = true;
+  submitBtn.textContent = 'Creating...';
+
   try {
-    const data = {
-      title: document.getElementById('title').value,
-      description: document.getElementById('description').value || undefined,
-      whatsapp_link: document.getElementById('whatsapp_link').value || undefined,
-    };
+    // 3. Call API
+    const data = await api.createGroup({ title, description, whatsapp_link });
+
+    // 4. Generate Links based on current URL
+    const baseUrl = window.location.origin;
     
-    const contribution = await createContribution(data);
+    // Admin Link: /admin.html?token=...
+    const adminUrl = `${baseUrl}/admin.html?token=${data.admin_token}`;
     
-    const memberUrl = `${window.location.origin}/contribution.html?code=${contribution.code}`;
-    const adminUrl = `${window.location.origin}/admin.html?token=${contribution.admin_token}`;
-    
-    document.getElementById('memberLink').value = memberUrl;
-    document.getElementById('adminLink').value = adminUrl;
-    
-    form.style.display = 'none';
-    result.style.display = 'block';
-  } catch (error) {
-    alert('Error creating contribution: ' + error.message);
-    btn.disabled = false;
-    btn.textContent = 'Create Contribution';
+    // Member Link: /contribution.html?code=...
+    const memberUrl = `${baseUrl}/contribution.html?code=${data.code}`;
+
+    // 5. Show Success UI
+    createCard.classList.add('hidden');
+    successCard.classList.remove('hidden');
+
+    // Populate inputs
+    document.getElementById('admin-link').value = adminUrl;
+    document.getElementById('member-link').value = memberUrl;
+    document.getElementById('go-admin-btn').href = adminUrl;
+
+    // 6. Setup Copy Buttons
+    setupCopyBtn('copy-admin', adminUrl);
+    setupCopyBtn('copy-member', memberUrl);
+
+  } catch (err) {
+    console.error(err);
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'Create Link 🚀';
   }
 });
 
-window.copyLink = (id) => {
-  const input = document.getElementById(id);
-  input.select();
-  document.execCommand('copy');
-  
-  const btn = event.target;
-  const original = btn.textContent;
-  btn.textContent = 'Copied!';
-  setTimeout(() => btn.textContent = original, 2000);
-};
+function setupCopyBtn(id, text) {
+  const btn = document.getElementById(id);
+  btn.addEventListener('click', () => {
+    navigator.clipboard.writeText(text);
+    const originalText = btn.textContent;
+    btn.textContent = 'Copied!';
+    setTimeout(() => btn.textContent = originalText, 2000);
+  });
+}

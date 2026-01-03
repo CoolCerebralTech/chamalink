@@ -1,64 +1,56 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Create Contribution - ChamaLink</title>
-  <link rel="stylesheet" href="/src/styles.css">
-</head>
-<body>
-  <div class="container">
-    <div class="card">
-      <h1>Create Contribution</h1>
-      <p>Start a new group contribution for any purpose</p>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Dashboard - ChamaLink</title>
+    <link rel="stylesheet" href="./src/styles.css" />
+  </head>
+  <body>
+    <div class="container">
 
-      <form id="createForm">
-        <div class="form-group">
-          <label for="title">Group Name *</label>
-          <input type="text" id="title" required placeholder="e.g. Wedding Support">
-        </div>
+      <!-- LOADING -->
+      <div id="loading" style="text-align: center; margin-top: 50px;">
+        <p>Loading dashboard...</p>
+      </div>
 
-        <div class="form-group">
-          <label for="description">Purpose</label>
-          <textarea id="description" placeholder="What are you raising money for?"></textarea>
-        </div>
-
-        <div class="form-group">
-          <label for="whatsapp_link">WhatsApp Group Link (optional)</label>
-          <input type="url" id="whatsapp_link" placeholder="https://chat.whatsapp.com/...">
-        </div>
-
-        <button type="submit" class="btn btn-primary">Create Contribution</button>
-      </form>
-    </div>
-
-    <div id="result" style="display: none;">
-      <div class="card">
-        <h2>✅ Contribution Created!</h2>
+      <!-- MAIN CONTENT -->
+      <div id="dashboard" class="hidden">
         
-        <div class="link-box">
-          <label>📤 Share this link with members:</label>
-          <div class="link-display">
-            <input type="text" id="memberLink" readonly>
-            <button class="btn btn-primary btn-sm" onclick="copyLink('memberLink')">Copy</button>
+        <!-- HEADER / STATS -->
+        <div class="card" style="background: var(--primary); color: white;">
+          <h2 id="group-title" style="margin-bottom: 0.5rem;">Group Name</h2>
+          <div style="display: flex; justify-content: space-between; align-items: flex-end;">
+            <div>
+              <div style="font-size: 0.9rem; opacity: 0.9;">Total Collected</div>
+              <div id="total-amount" style="font-size: 2rem; font-weight: bold;">KES 0</div>
+            </div>
+            <div style="text-align: right;">
+              <div style="font-size: 0.9rem; opacity: 0.9;">Pending</div>
+              <div id="pending-amount" style="font-size: 1.2rem; font-weight: 600;">KES 0</div>
+            </div>
           </div>
         </div>
 
-        <div class="link-box">
-          <label>🔐 Admin link (keep private):</label>
-          <div class="link-display">
-            <input type="text" id="adminLink" readonly>
-            <button class="btn btn-primary btn-sm" onclick="copyLink('adminLink')">Copy</button>
-          </div>
+        <!-- ACTIONS -->
+        <div style="margin-bottom: 1.5rem; display: flex; gap: 10px;">
+          <button id="refresh-btn" class="btn-secondary" style="margin:0;">🔄 Refresh</button>
+          <button id="whatsapp-btn" style="margin:0; background-color: #25D366;">📋 Copy WhatsApp Update</button>
         </div>
 
-        <p style="margin-top: 16px; font-size: 14px; color: var(--gray-700);">
-          Save the admin link to manage contributions and approve payments!
-        </p>
+        <!-- MEMBERS LIST -->
+        <h3 style="margin-bottom: 1rem;">Contributions</h3>
+        <div id="members-list">
+          <!-- Member items will be injected here via JS -->
+        </div>
+
+        <div id="empty-state" class="card hidden" style="text-align: center; color: var(--text-light);">
+          <p>No members yet.</p>
+          <p>Share your link to get started!</p>
+        </div>
+
       </div>
     </div>
-  </div>
-
-  <script type="module" src="/src/create.js"></script>
-</body>
+    <script type="module" src="./src/admin.js"></script>
+  </body>
 </html>

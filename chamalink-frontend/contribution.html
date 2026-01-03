@@ -1,62 +1,71 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Contribution - ChamaLink</title>
-  <link rel="stylesheet" href="/src/styles.css">
-</head>
-<body>
-  <div class="container">
-    <div id="loading" class="loading">
-      Loading...
-    </div>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Join Contribution - ChamaLink</title>
+    <link rel="stylesheet" href="./src/styles.css" />
+  </head>
+  <body>
+    <div class="container">
+      
+      <!-- LOADING STATE -->
+      <div id="loading" style="text-align: center; margin-top: 50px;">
+        <p>Loading group details...</p>
+      </div>
 
-    <div id="content" style="display: none;">
-      <div class="card">
-        <h1 id="title"></h1>
-        <p id="description"></p>
+      <!-- ERROR STATE -->
+      <div id="error-card" class="card hidden" style="border-left: 5px solid var(--danger);">
+        <h2 style="color: var(--danger);">Group Not Found</h2>
+        <p>This link seems invalid or expired.</p>
+        <a href="/" style="text-decoration: underline;">Create your own group</a>
+      </div>
+
+      <!-- MAIN CONTENT -->
+      <div id="main-content" class="hidden">
         
-        <div class="total-box">
-          <div class="total-label">Total Collected</div>
-          <div class="total-amount" id="total">KES 0</div>
-        </div>
-
-        <h2>Your Contribution</h2>
-        <form id="memberForm">
-          <div class="form-group">
-            <label for="name">Your Name *</label>
-            <input type="text" id="name" required placeholder="John Doe">
+        <!-- GROUP INFO -->
+        <div class="card" style="border-top: 5px solid var(--primary);">
+          <h1 id="group-title">Loading...</h1>
+          <p id="group-desc">...</p>
+          <div id="whatsapp-container" class="hidden" style="margin-top: 1rem;">
+            <a id="whatsapp-link" href="#" target="_blank" style="color: #25D366; font-weight: bold; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 8px;">
+              <span>Join WhatsApp Group</span> <span>💬</span>
+            </a>
           </div>
+        </div>
 
-          <div class="form-group">
-            <label for="amount">Amount (KES) *</label>
-            <input type="number" id="amount" required min="1" placeholder="1000">
+        <!-- JOIN FORM -->
+        <div id="join-card" class="card">
+          <h2>👋 Join & Contribute</h2>
+          <form id="join-form">
+            <div class="input-group">
+              <label>Your Name</label>
+              <input type="text" id="name" placeholder="e.g. John Doe" required />
+            </div>
+
+            <div class="input-group">
+              <label>Amount (KES)</label>
+              <input type="number" id="amount" placeholder="e.g. 1000" min="1" required />
+            </div>
+
+            <button type="submit" id="submit-btn">Pledge / Pay 💸</button>
+          </form>
+        </div>
+
+        <!-- SUCCESS STATE (Hidden initially) -->
+        <div id="success-card" class="card hidden" style="text-align: center;">
+          <div style="font-size: 3rem;">✅</div>
+          <h2>Thank You!</h2>
+          <p>Your contribution has been recorded.</p>
+          <div style="background: #fffbeb; padding: 10px; border-radius: 8px; color: #92400e; font-size: 0.9rem;">
+            Please send the money to the Admin.<br>They will confirm your payment soon.
           </div>
-
-          <button type="submit" class="btn btn-primary">Submit Contribution</button>
-        </form>
-
-        <div id="success" class="alert alert-success" style="display: none;">
-          ✅ Thank you! Your contribution has been recorded. The admin will confirm once payment is received.
         </div>
+
       </div>
 
-      <div class="card">
-        <h2>Recent Contributions</h2>
-        <div id="memberList" class="member-list"></div>
-      </div>
     </div>
-
-    <div id="error" style="display: none;">
-      <div class="card">
-        <div class="alert alert-error">
-          Contribution not found. Please check your link.
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <script type="module" src="/src/contribution.js"></script>
-</body>
+    <script type="module" src="./src/contribution.js"></script>
+  </body>
 </html>

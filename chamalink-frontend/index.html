@@ -1,13 +1,71 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>frontend</title>
+    <title>ChamaLink - Simple Contributions</title>
+    <link rel="stylesheet" href="./src/styles.css" />
   </head>
   <body>
-    <div id="app"></div>
-    <script type="module" src="/src/main.js"></script>
+    <div class="container">
+      
+      <!-- LOGO / HEADER -->
+      <header style="text-align: center; margin-bottom: 2rem;">
+        <h1 style="color: var(--primary);">✨ ChamaLink</h1>
+        <p>The easiest way to collect money for anything.</p>
+      </header>
+
+      <!-- STEP 1: CREATE FORM -->
+      <div id="create-card" class="card">
+        <h2>Create a Group</h2>
+        <form id="create-form">
+          <div class="input-group">
+            <label>Group Name (What is this for?)</label>
+            <input type="text" id="title" placeholder="e.g. John's Wedding Gift" required />
+          </div>
+
+          <div class="input-group">
+            <label>Description (Optional)</label>
+            <textarea id="description" placeholder="Short details about the contribution..."></textarea>
+          </div>
+
+          <div class="input-group">
+            <label>WhatsApp Group Link (Optional)</label>
+            <input type="url" id="whatsapp" placeholder="https://chat.whatsapp.com/..." />
+          </div>
+
+          <button type="submit" id="submit-btn">Create Link 🚀</button>
+        </form>
+      </div>
+
+      <!-- STEP 2: SUCCESS / LINKS (Hidden by default) -->
+      <div id="success-card" class="card hidden" style="text-align: center;">
+        <div style="font-size: 3rem; margin-bottom: 1rem;">🎉</div>
+        <h2>Group Created!</h2>
+        <p>Save these links immediately.</p>
+
+        <div style="text-align: left; background: #f9fafb; padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
+          <label style="color: var(--danger);">🔑 Admin Link (Private - Don't Share)</label>
+          <div style="display: flex; gap: 8px;">
+            <input type="text" id="admin-link" readonly style="font-size: 0.9rem; color: var(--text-light);" />
+            <button id="copy-admin" style="width: auto; padding: 0.5rem 1rem;">Copy</button>
+          </div>
+        </div>
+
+        <div style="text-align: left; background: #eff6ff; padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
+          <label style="color: var(--primary);">🌍 Member Link (Share this!)</label>
+          <div style="display: flex; gap: 8px;">
+            <input type="text" id="member-link" readonly style="font-size: 0.9rem; color: var(--text-light);" />
+            <button id="copy-member" style="width: auto; padding: 0.5rem 1rem;">Copy</button>
+          </div>
+        </div>
+
+        <a href="" id="go-admin-btn">
+          <button class="btn-secondary">Go to Admin Dashboard &rarr;</button>
+        </a>
+      </div>
+
+    </div>
+    <script type="module" src="./src/create.js"></script>
   </body>
 </html>

@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Create Contribution - ChamaLink</title>
+  <link rel="stylesheet" href="/src/styles.css">
+</head>
+<body>
+  <div class="container">
+    <div class="card">
+      <h1>Create Contribution</h1>
+      <p>Start a new group contribution for any purpose</p>
+
+      <form id="createForm">
+        <div class="form-group">
+          <label for="title">Group Name *</label>
+          <input type="text" id="title" required placeholder="e.g. Wedding Support">
+        </div>
+
+        <div class="form-group">
+          <label for="description">Purpose</label>
+          <textarea id="description" placeholder="What are you raising money for?"></textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="whatsapp_link">WhatsApp Group Link (optional)</label>
+          <input type="url" id="whatsapp_link" placeholder="https://chat.whatsapp.com/...">
+        </div>
+
+        <button type="submit" class="btn btn-primary">Create Contribution</button>
+      </form>
+    </div>
+
+    <div id="result" style="display: none;">
+      <div class="card">
+        <h2>✅ Contribution Created!</h2>
+        
+        <div class="link-box">
+          <label>📤 Share this link with members:</label>
+          <div class="link-display">
+            <input type="text" id="memberLink" readonly>
+            <button class="btn btn-primary btn-sm" onclick="copyLink('memberLink')">Copy</button>
+          </div>
+        </div>
+
+        <div class="link-box">
+          <label>🔐 Admin link (keep private):</label>
+          <div class="link-display">
+            <input type="text" id="adminLink" readonly>
+            <button class="btn btn-primary btn-sm" onclick="copyLink('adminLink')">Copy</button>
+          </div>
+        </div>
+
+        <p style="margin-top: 16px; font-size: 14px; color: var(--gray-700);">
+          Save the admin link to manage contributions and approve payments!
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="/src/create.js"></script>
+</body>
+</html>

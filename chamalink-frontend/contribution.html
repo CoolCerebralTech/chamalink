@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Contribution - ChamaLink</title>
+  <link rel="stylesheet" href="/src/styles.css">
+</head>
+<body>
+  <div class="container">
+    <div id="loading" class="loading">
+      Loading...
+    </div>
+
+    <div id="content" style="display: none;">
+      <div class="card">
+        <h1 id="title"></h1>
+        <p id="description"></p>
+        
+        <div class="total-box">
+          <div class="total-label">Total Collected</div>
+          <div class="total-amount" id="total">KES 0</div>
+        </div>
+
+        <h2>Your Contribution</h2>
+        <form id="memberForm">
+          <div class="form-group">
+            <label for="name">Your Name *</label>
+            <input type="text" id="name" required placeholder="John Doe">
+          </div>
+
+          <div class="form-group">
+            <label for="amount">Amount (KES) *</label>
+            <input type="number" id="amount" required min="1" placeholder="1000">
+          </div>
+
+          <button type="submit" class="btn btn-primary">Submit Contribution</button>
+        </form>
+
+        <div id="success" class="alert alert-success" style="display: none;">
+          ✅ Thank you! Your contribution has been recorded. The admin will confirm once payment is received.
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Recent Contributions</h2>
+        <div id="memberList" class="member-list"></div>
+      </div>
+    </div>
+
+    <div id="error" style="display: none;">
+      <div class="card">
+        <div class="alert alert-error">
+          Contribution not found. Please check your link.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="/src/contribution.js"></script>
+</body>
+</html>

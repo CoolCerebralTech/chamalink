@@ -1,5 +1,5 @@
-const API_URL = 'http://localhost:3000';
-
+// 👇 Read from Vite Environment Variable, fallback to localhost for dev
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 // Helper to handle responses
 async function fetchJson(endpoint, options = {}) {
   try {
